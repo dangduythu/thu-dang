@@ -1,0 +1,29 @@
+ENGLISH LEARNING 10.5 — HUONG DAN XUAT APK (WINDOWS)
+
+Ban nay la ma nguon da chuan bi cau hinh EAS, CHUA PHAI file APK da duoc build.
+Khong co thay doi doi voi App.js, LearningHub.js, CloudBackup.js, vocabulary.js va package.json so voi ZIP Snack ban gui.
+
+1. Sao luu du lieu hoc tu Expo Go neu can. APK la ung dung rieng, khong tu doc AsyncStorage cua Expo Go.
+2. Giai nen ZIP vao mot thu muc de nho, vi du D:\EnglishLearningAPK.
+3. Cai Node.js LTS: https://nodejs.org/ . Mo PowerShell trong thu muc co package.json.
+4. Kiem tra: node -v ; npm -v
+5. Cai dependencies: npm install
+6. Kiem tra phien ban Expo: npx expo install --check
+   Neu cong cu bao sai lech: npx expo install --fix (sau do kiem tra thay doi truoc khi build).
+7. Cai EAS CLI: npm install -g eas-cli
+8. Dang nhap: eas login
+9. Lan dau ket noi project: eas build:configure -p android
+   Neu EAS yeu cau gan project ID vao app.json, chap nhan. Giu nguyen profile preview trong eas.json;
+   neu lenh ghi de file eas.json thi dan lai profile preview tu ban sao.
+10. Build APK: eas build -p android --profile preview
+    Neu hoi tao Android keystore, chon EAS tao/quan ly va luu thong tin truy cap tai khoan Expo.
+11. Cho build hoan tat; tai file .apk tu duong dan EAS cung cap va cai tren Android.
+
+Luu y: truoc lan build dau, hay chon android.package duy nhat cho ung dung cua ban trong app.json.
+Sau khi phat hanh, GIU NGUYEN android.package va signing keystore de cap nhat cung ung dung.
+Neu cai ban moi de len ban cu, tang android.versionCode va version.
+Neu loi build, gui nguyen van log EAS (doan loi dau tien) de sua dung nguyen nhan.
+APK nay chua duoc build/kiem thu tren thiet bi trong phien lam viec nay.
+
+CloudBackup.js hien dung che do JSON sao chep/dan vao Google Docs/Drive; KHONG dong bo tu dong.
+Tham khao: https://docs.expo.dev/build-reference/apk/
