@@ -2219,7 +2219,6 @@ export default function App() {
           >
             {currentWord.word}
           </Text>
-          {showMeaning && <WordVisual key={`learn-picture-${currentWord.id}`} word={currentWord.word} meaning={currentWord.meaning} topic={currentWord.topic} />}
 
 
           {!showMeaning ? (
@@ -2296,6 +2295,7 @@ export default function App() {
 
         </Pressable>
 
+        {showMeaning && <WordVisual key={`learn-picture-${currentWord.id}`} word={currentWord.word} meaning={currentWord.meaning} topic={currentWord.topic} />}
 
         <PronunciationPanel
           key={currentWord.id}
