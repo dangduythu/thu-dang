@@ -55,6 +55,9 @@ jobs:
       - name: Check Expo dependency compatibility
         run: npx --yes expo-doctor
 
+      - name: Compile JavaScript bundle (catch JSX and import errors)
+        run: npx expo export --platform android --output-dir /tmp/english-learning-bundle-check
+
       - name: Verify app and existing EAS project
         run: |
           node - <<'NODE'
