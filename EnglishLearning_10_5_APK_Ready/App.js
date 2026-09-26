@@ -1224,7 +1224,7 @@ export default function App() {
     return <LearningHub
       vocabulary={vocabulary} currentDay={currentDay} reviewData={reviewData}
       speakingHistory={speakingHistory} onHome={() => setScreen('home')}
-      onPlus={() => setScreen('plus')
+      onPlus={() => setScreen('plus')}
       onDay={() => setScreen('days')}
       onLearn={() => { if (newWords.length) startNewSession(); else if (dueWords.length) startReviewSession(); else setScreen('days'); }}
       onSpeaking={() => { speakingReturnRef.current = 'home'; setSpeakingIndex(0); setSpokenWordIds([]); setScreen('speaking'); }}
