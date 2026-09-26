@@ -1,0 +1,72 @@
+name: Build English Learning APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: english-learning-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-apk:
+    name: Check and build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: EnglishLearning_10_5_APK_Ready
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check Expo token is configured
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add the EXPO_TOKEN Actions repository secret before running this workflow."
+            exit 1
+          fi
+
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check Expo dependency compatibility
+        run: npx --yes expo-doctor
+
+      - name: Verify app and existing EAS project
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const app = JSON.parse(fs.readFileSync('app.json', 'utf8')).expo;
+          const eas = JSON.parse(fs.readFileSync('eas.json', 'utf8'));
+          if (app.extra?.eas?.projectId !== '956b20e5-fa85-44da-889a-2dda2cdf10ec') throw new Error('Missing or wrong Expo project ID');
+          if (app.owner !== 'dangduythus-team') throw new Error('Wrong Expo owner');
+          if (app.android?.package !== 'com.englishlearning.personalapp') throw new Error('Android package changed');
+          if (eas.build?.preview?.android?.buildType !== 'apk') throw new Error('Preview profile must build an APK');
+          console.log('Verified:', app.version, app.android.package, 'versionCode', app.android.versionCode);
+          NODE
+
+      - name: Install EAS CLI
+        run: npm install --global eas-cli
+
+      - name: Verify Expo authentication
+        run: eas whoami
+
+      - name: Build APK on Expo EAS
+        run: eas build --platform android --profile preview --non-interactive
+
+      - name: Build download location
+        if: success()
+        run: |
+          echo "APK build finished. Open the Expo Builds page to download the signed APK."
+          echo "https://expo.dev/accounts/dangduythus-team/projects/english-learning-personal/builds"
