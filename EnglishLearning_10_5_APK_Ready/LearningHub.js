@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
+import WordVisual from './WordVisual';
 
 // New keys only: original V7 SRS, speaking and listening keys remain untouched.
 const FAVORITES_KEY = '@technical_english_favorites_v1';
@@ -32,6 +34,7 @@ export default function LearningHub({ vocabulary, currentDay, reviewData, speaki
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   const [accent, setAccent] = useState('en-US');
+  const [visualWordId, setVisualWordId] = useState(null);
 
   useEffect(() => {
     let live = true;
@@ -84,7 +87,7 @@ export default function LearningHub({ vocabulary, currentDay, reviewData, speaki
   const tabs = [['overview','Tổng quan'],['dictionary','Tra từ'],['smart','Ôn từ yếu'],['test','Kiểm tra']];
 
   return <SafeAreaView style={s.root}>
-    <View style={s.header}><Pressable onPress={onHome}><Text style={s.back}>← Home</Text></Pressable><Text style={s.headerTitle}>ENGLISH LEARNING 10.0</Text></View>
+    <View style={s.header}><Pressable onPress={onHome} style={{minHeight:48,justifyContent:'center',paddingHorizontal:8}} hitSlop={8}><Text style={s.back}>← Home</Text></Pressable><Text style={s.headerTitle}>ENGLISH LEARNING 10.0</Text></View>
     <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
       <Text style={s.title}>My Learning</Text><Text style={s.muted}>Day {currentDay}/30 · English for Manufacturing & Engineering</Text>
       <View style={s.tabRow}>{tabs.map(([id,label]) => <Pressable key={id} onPress={() => setTab(id)} style={[s.tab,tab===id&&s.activeTab]}><Text style={[s.tabLabel,tab===id&&s.activeTabText]}>{label}</Text></Pressable>)}</View>
@@ -100,7 +103,7 @@ export default function LearningHub({ vocabulary, currentDay, reviewData, speaki
         <Pressable style={s.secondary} onPress={()=>setOnlyFavorites(x=>!x)}><Text style={s.secondaryText}>{onlyFavorites?'★ Đang xem từ yêu thích':'☆ Chỉ xem từ yêu thích'} · {favorites.length} từ</Text></Pressable>
         <View style={s.accentRow}>{['en-US','en-GB'].map(code=><Pressable key={code} style={[s.accent,accent===code&&s.accentActive]} onPress={()=>setAccent(code)}><Text>{code==='en-US'?'🇺🇸 Anh–Mỹ':'🇬🇧 Anh–Anh'}</Text></Pressable>)}</View>
         <Text style={s.muted}>Hiển thị tối đa 80 kết quả mỗi lần tìm.</Text>
-        {searched.map(item=><View key={item.id} style={s.wordRow}><View style={{flex:1}}><Text style={s.word}>{item.word}</Text><Text>{item.meaning}</Text><Text style={s.muted}>Day {item.day} · {item.topic}</Text></View><Pressable onPress={()=>play(item.word)} style={s.mini}><Text>🔊</Text></Pressable><Pressable onPress={()=>toggleFavorite(item.id)} style={s.mini}><Text>{favorites.includes(String(item.id))?'★':'☆'}</Text></Pressable></View>)}
+        {searched.map(item=><React.Fragment key={item.id}><View style={s.wordRow}><View style={{flex:1}}><Text style={s.word}>{item.word}</Text><Text>{item.meaning}</Text><Text style={s.muted}>Day {item.day} · {item.topic}</Text></View><Pressable onPress={()=>setVisualWordId(x=>x===item.id?null:item.id)} style={s.mini}><Text>🖼️</Text></Pressable><Pressable onPress={()=>play(item.word)} style={s.mini}><Text>🔊</Text></Pressable><Pressable onPress={()=>toggleFavorite(item.id)} style={s.mini}><Text>{favorites.includes(String(item.id))?'★':'☆'}</Text></Pressable></View>{visualWordId===item.id && <WordVisual word={item.word} meaning={item.meaning} topic={item.topic} compact />}</React.Fragment>)}
         {!searched.length && <Text style={s.muted}>Không tìm thấy từ phù hợp.</Text>}
       </>}
       {tab==='smart' && <>
