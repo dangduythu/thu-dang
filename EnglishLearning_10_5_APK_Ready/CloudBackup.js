@@ -11,6 +11,8 @@ export const BACKUP_KEYS = [
   '@technical_english_speaking_history_v1',
   '@technical_english_listening_history_v1',
   '@technical_english_favorites_v1',
+  '@technical_english_plus_history_v1',
+  '@technical_english_speaking_reflection_v1',
 ];
 const FORMAT = 'english-learning-backup';
 const VERSION = 1;
@@ -39,6 +41,8 @@ export function validateBackup(snapshot) {
     }
     if (key === '@technical_english_listening_history_v1' && !Array.isArray(parsed)) throw new Error('Lịch sử nghe phải là một danh sách.');
     if (key === '@technical_english_favorites_v1' && !Array.isArray(parsed)) throw new Error('Từ yêu thích phải là một danh sách.');
+    if (key === '@technical_english_plus_history_v1' && !Array.isArray(parsed)) throw new Error('Lịch sử luyện nâng cao phải là danh sách.');
+    if (key === '@technical_english_speaking_reflection_v1' && !isObject(parsed)) throw new Error('Tự đánh giá phát âm phải là đối tượng.');
     if (key === '@technical_english_speaking_history_v1' && !isObject(parsed)) throw new Error('Lịch sử nói phải là một đối tượng.');
   }
   return snapshot;
