@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  SafeAreaView,
   View,
   Text,
   Pressable,
@@ -10,6 +9,10 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { confirmExit, installAndroidBack } from './NavigationBack';
+import WordVisual from './WordVisual';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -114,6 +117,26 @@ export default function App() {
 
   const [screen, setScreen] =
     useState('home');
+  const previousScreenRef = useRef('home');
+  const learnReturnRef = useRef('home');
+
+  useEffect(() => {
+    if (screen === 'learn' && previousScreenRef.current !== 'learn') {
+      learnReturnRef.current = previousScreenRef.current === 'hub' ? 'hub' : 'home';
+    }
+    previousScreenRef.current = screen;
+  }, [screen]);
+
+  useEffect(() => installAndroidBack(() => {
+    Speech.stop().catch(() => {});
+    if (screen === 'home') { confirmExit(); return; }
+    if (screen === 'learn') { setScreen(learnReturnRef.current); return; }
+    const parent = {
+      comprehensiveQuiz: 'hub', listeningReviewQuiz: 'listeningReview',
+      listeningReview: 'home', speakingHistory: 'home',
+    }[screen] || 'home';
+    setScreen(parent);
+  }), [screen]);
 
   // Luyện nói độc lập: không chỉnh sửa dữ liệu SRS.
   const [speakingIndex, setSpeakingIndex] = useState(0);
@@ -1928,6 +1951,7 @@ export default function App() {
                 <Text style={styles.practiceTopic}>{item.topic}</Text>
                 <Text style={styles.practiceWord}>{item.word}</Text>
                 <Text style={styles.practiceMeaning}>{item.meaning}</Text>
+                <WordVisual key={`speaking-picture-${item.id}`} word={item.word} meaning={item.meaning} topic={item.topic} compact />
                 {!!item.example && <Text style={styles.practiceExample}>{item.example}</Text>}
                 {!!item.exampleVi && <Text style={styles.practiceExampleVi}>{item.exampleVi}</Text>}
                 <Text style={styles.practiceStatus}>
@@ -2041,7 +2065,7 @@ export default function App() {
         <Pressable
 
           onPress={() =>
-            setScreen('home')
+            setScreen(learnReturnRef.current)
           }
         >
 
@@ -2159,6 +2183,7 @@ export default function App() {
           >
             {currentWord.word}
           </Text>
+          {showMeaning && <WordVisual key={`learn-picture-${currentWord.id}`} word={currentWord.word} meaning={currentWord.meaning} topic={currentWord.topic} />}
 
 
           {!showMeaning ? (
@@ -3490,7 +3515,7 @@ const styles =
 
     topHeader: {
       paddingHorizontal: 20,
-      paddingTop: 40,
+      paddingTop: 8,
       paddingBottom: 16,
       flexDirection: 'row',
       alignItems: 'center',
@@ -3842,7 +3867,7 @@ const styles =
 
     learnHeader: {
       paddingHorizontal: 22,
-      paddingTop: 40,
+      paddingTop: 8,
       paddingBottom: 16,
       flexDirection: 'row',
       alignItems: 'center',
@@ -3852,6 +3877,10 @@ const styles =
 
 
     backButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 8,
+      minHeight: 48,
+      textAlignVertical: 'center',
       fontSize: 16,
       fontWeight: '700',
       color: '#304FFE',
