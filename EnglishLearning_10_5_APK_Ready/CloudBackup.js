@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Text, Pressable, View, StyleSheet, ActivityIndicator, TextInput, Share } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, Text, Pressable, View, StyleSheet, ActivityIndicator, TextInput, Share } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Stable snapshot keys: never rename the legacy storage keys as part of a backup.
@@ -124,7 +125,7 @@ export default function CloudBackup({ onHome, onImported }) {
   }
 
   return <SafeAreaView style={s.root}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
-    <Pressable onPress={onHome}><Text style={s.back}>← Home</Text></Pressable>
+    <Pressable onPress={onHome} style={{minHeight:48,justifyContent:'center',paddingHorizontal:8}} hitSlop={8}><Text style={s.back}>← Home</Text></Pressable>
     <Text style={s.title}>☁️ Cloud Backup 10.5 – Bản tương thích Snack</Text>
     <Text style={s.note}>Chế độ sao lưu JSON bằng cách sao chép/dán, không sử dụng expo-file-system, expo-sharing hoặc expo-document-picker. Dữ liệu vẫn nằm trong AsyncStorage cho đến khi bạn xác nhận khôi phục.</Text>
     <View style={s.card}>
