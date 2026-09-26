@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { confirmExit, installAndroidBack } from './NavigationBack';
 import WordVisual from './WordVisual';
+import LearningPlus from './LearningPlus';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -119,6 +120,7 @@ export default function App() {
     useState('home');
   const previousScreenRef = useRef('home');
   const learnReturnRef = useRef('home');
+  const speakingReturnRef = useRef('home');
 
   useEffect(() => {
     if (screen === 'learn' && previousScreenRef.current !== 'learn') {
@@ -134,6 +136,7 @@ export default function App() {
     const parent = {
       comprehensiveQuiz: 'hub', listeningReviewQuiz: 'listeningReview',
       listeningReview: 'home', speakingHistory: 'home',
+      speaking: speakingReturnRef.current, plus: 'hub',
     }[screen] || 'home';
     setScreen(parent);
   }), [screen]);
@@ -1191,13 +1194,20 @@ export default function App() {
     }} />;
   }
 
+  if (screen === 'plus') {
+    return <LearningPlus vocabulary={vocabulary} currentDay={currentDay} reviewData={reviewData}
+      onHome={() => setScreen('hub')}
+      onSpeaking={() => { speakingReturnRef.current = 'plus'; setSpeakingIndex(0); setSpokenWordIds([]); setScreen('speaking'); }} />;
+  }
+
   if (screen === 'hub') {
     return <LearningHub
       vocabulary={vocabulary} currentDay={currentDay} reviewData={reviewData}
       speakingHistory={speakingHistory} onHome={() => setScreen('home')}
+      onPlus={() => setScreen('plus')
       onDay={() => setScreen('days')}
       onLearn={() => { if (newWords.length) startNewSession(); else if (dueWords.length) startReviewSession(); else setScreen('days'); }}
-      onSpeaking={() => { setSpeakingIndex(0); setSpokenWordIds([]); setScreen('speaking'); }}
+      onSpeaking={() => { speakingReturnRef.current = 'home'; setSpeakingIndex(0); setSpokenWordIds([]); setScreen('speaking'); }}
       onListening={() => setScreen('listeningQuiz')}
       onTest={items => { setComprehensiveWords(items); setScreen('comprehensiveQuiz'); }}
       onSrsReview={ids => {
@@ -1929,7 +1939,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.learnHeader}>
-          <Pressable onPress={() => setScreen('home')}>
+          <Pressable onPress={() => setScreen(speakingReturnRef.current)}>
             <Text style={styles.backButton}>← Home</Text>
           </Pressable>
           <Text style={styles.wordCounter}>DAY {currentDay} · SPEAKING</Text>
