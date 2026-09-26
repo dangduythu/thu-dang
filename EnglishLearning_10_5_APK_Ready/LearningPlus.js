@@ -59,7 +59,7 @@ export default function LearningPlus({ vocabulary, currentDay, reviewData, onHom
     return ids;
   },[reviewData,history,reflections]);
   const weak = useMemo(()=>vocabulary.filter(w=>weakIds.has(String(w.id))),[vocabulary,weakIds]);
-  const question = newQuestion(queue,index,mode);
+  const question = useMemo(() => newQuestion(queue,index,mode), [queue,index,mode]);
   const current = queue[index];
   function speak(text,slow=false){if(!text)return;Speech.stop().then(()=>Speech.speak(text,{language:accent,rate:slow?0.68:0.92})).catch(()=>setError('Không thể phát âm; kiểm tra âm lượng và giọng đọc của thiết bị.'));}
   function enter(next){Speech.stop().catch(()=>{});setMode(next);setIndex(0);setPicked(null);setRevealed(false);setAnswer('');setResults([]);savedRef.current=false;}
