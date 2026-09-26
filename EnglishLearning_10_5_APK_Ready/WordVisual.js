@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 const PICTURES = [
@@ -30,6 +30,21 @@ function plainText(value) {
 export default function WordVisual({ word, meaning, topic, compact = false }) {
   const [photo, setPhoto] = useState(null);
   const [state, setState] = useState('idle');
+  const [ipa, setIpa] = useState('');
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    setIpa(''); setImageFailed(false);
+    const term = String(word || '').trim();
+    if (!/^[a-z]+(?:[-'][a-z]+)*$/i.test(term)) return () => { live = false; };
+    fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(term))
+      .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+      .then(entries => { const entry = Array.isArray(entries) ? entries[0] : null;
+        const value = entry?.phonetics?.find(p => p.text)?.text || entry?.phonetic || '';
+        if (live) setIpa(String(value).trim());
+      }).catch(() => {});
+    return () => { live = false; };
+  }, [word]);
   const visual = illustration(word, meaning, topic);
   async function findPhoto() {
     if (state === 'loading') return;
@@ -52,6 +67,7 @@ export default function WordVisual({ word, meaning, topic, compact = false }) {
           /\.(jpe?g|png|webp)(\?|$)/i.test(p.info.url || '') &&
           (p.info.thumburl || p.info.url || '').includes('wikimedia.org'));
       if (!candidate) throw new Error('not-found');
+      setImageFailed(false);
       setPhoto({ uri: candidate.info.thumburl || candidate.info.url,
         credit: plainText(candidate.info.extmetadata?.Artist?.value) || 'Wikimedia Commons',
         license: plainText(candidate.info.extmetadata?.LicenseShortName?.value),
@@ -61,9 +77,10 @@ export default function WordVisual({ word, meaning, topic, compact = false }) {
     } catch (err) { setState('unavailable'); }
   }
   return <View style={[s.root, compact && s.compact]}>
-    {photo ? <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="contain" /> :
+    {ipa ? <Text style={s.ipa}>{ipa}</Text> : null}
+    {photo && !imageFailed ? <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="contain" onError={() => setImageFailed(true)} /> :
       <View style={s.illustration}><View style={s.orb}><Text style={s.emoji}>{visual.icon}</Text></View><Text style={s.visualLabel}>{visual.label}</Text></View>}
-    <Text style={s.note}>{photo ? 'Ảnh tham khảo – hãy đối chiếu với nghĩa của từ.' : 'Hình gợi nhớ (có sẵn khi không có mạng)'}</Text>
+    <Text style={s.note}>{photo && !imageFailed ? 'Ảnh tham khảo – hãy đối chiếu với nghĩa của từ.' : 'Hình gợi nhớ (có sẵn khi không có mạng)'}</Text>
     {photo && <Pressable onPress={() => Linking.openURL(photo.page).catch(() => {})} accessibilityRole="link"><Text style={s.credit} numberOfLines={2}>Nguồn/giấy phép: {photo.credit} · {photo.license || 'Wikimedia Commons'} ↗</Text></Pressable>}
     <Pressable style={s.button} onPress={findPhoto} disabled={state === 'loading'} accessibilityRole="button" accessibilityLabel={photo ? 'Ẩn ảnh tham khảo' : 'Tìm ảnh thực tế minh họa'}>
       {state === 'loading' ? <ActivityIndicator color="#2349A8" size="small" /> : <Text style={s.buttonText}>{photo ? 'Ẩn ảnh thực tế' : '🖼️ Tìm ảnh thực tế (cần mạng)'}</Text>}
@@ -78,6 +95,7 @@ const s = StyleSheet.create({
   orb: { width: 100, height: 100, backgroundColor: '#D5E5FF', borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
   emoji: { fontSize: 57 }, visualLabel: { color: '#23477C', fontWeight: '700', marginTop: 8 },
   photo: { width: '100%', height: 190, borderRadius: 10, backgroundColor: '#E8EEF8' },
+  ipa: { color: '#3154A8', fontSize: 14, fontWeight: '700', marginBottom: 6 },
   note: { color: '#66758A', fontSize: 11, marginTop: 5, textAlign: 'center' },
   credit: { color: '#66758A', fontSize: 10, textAlign: 'center', marginTop: 4 },
   button: { minHeight: 44, marginTop: 9, paddingHorizontal: 15, backgroundColor: '#FFFFFF', borderRadius: 10, justifyContent: 'center', alignItems: 'center', alignSelf: 'stretch' },
