@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { confirmExit, installAndroidBack } from './NavigationBack';
 import WordVisual from './WordVisual';
-import LearningPlus from './LearningPlus';
+import LearningPlus, { SPEAKING_REFLECTION_KEY } from './LearningPlus';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -149,6 +149,7 @@ export default function App() {
   const [speakingHistory, setSpeakingHistory] = useState({});
   const [speakingReady, setSpeakingReady] = useState(false);
   const [speakingSaveError, setSpeakingSaveError] = useState(false);
+  const [speakingReflections, setSpeakingReflections] = useState({});
 
   const [currentDay, setCurrentDay] =
     useState(1);
@@ -204,6 +205,25 @@ export default function App() {
     })();
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let live = true;
+    AsyncStorage.getItem(SPEAKING_REFLECTION_KEY).then(raw => {
+      if (!live || !raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) setSpeakingReflections(parsed);
+    }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+
+  async function setPronunciationReflection(item, rating) {
+    if (!item) return;
+    const next = { ...speakingReflections, [String(item.id)]: { rating, updatedAt: Date.now() } };
+    try {
+      await AsyncStorage.setItem(SPEAKING_REFLECTION_KEY, JSON.stringify(next));
+      setSpeakingReflections(next);
+    } catch (_) { Alert.alert('Chưa lưu được', 'Hãy thử lại sau khi kiểm tra dung lượng thiết bị.'); }
+  }
 
   // Stats record only successful completed recordings; the audio itself remains temporary.
   useEffect(() => {
@@ -1981,6 +2001,12 @@ export default function App() {
                 onNext={() => setSpeakingIndex(i => Math.min(total - 1, i + 1))}
                 onFinish={() => setScreen('speakingHistory')}
               />
+              <View style={{backgroundColor:'#FFFFFF',borderRadius:14,padding:14,marginTop:12,gap:8}}>
+                <Text style={{fontWeight:'800',color:'#17345B'}}>Tự đánh giá sau khi nghe lại</Text>
+                <Text style={{color:'#66758A',fontSize:12}}>Đây là đánh giá của bạn, không phải điểm phát âm do AI chấm.</Text>
+                <Pressable onPress={() => setPronunciationReflection(item,'ok')} style={{minHeight:44,justifyContent:'center',backgroundColor:'#E9F8F0',padding:12,borderRadius:10}}><Text style={{color:'#176545',fontWeight:'700'}}>✓ Tự thấy ổn {speakingReflections[String(item.id)]?.rating==='ok'?'(đã lưu)':''}</Text></Pressable>
+                <Pressable onPress={() => setPronunciationReflection(item,'repeat')} style={{minHeight:44,justifyContent:'center',backgroundColor:'#FFF3E6',padding:12,borderRadius:10}}><Text style={{color:'#83511D',fontWeight:'700'}}>↻ Cần luyện lại {speakingReflections[String(item.id)]?.rating==='repeat'?'(đã lưu)':''}</Text></Pressable>
+              </View>
             </>
           ) : <Text>Ngày này chưa có từ vựng.</Text>}
           <Text style={styles.practiceFooter}>
