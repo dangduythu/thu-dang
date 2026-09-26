@@ -19,7 +19,7 @@ jobs:
       run:
         working-directory: EnglishLearning_10_5_APK_Ready
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_TOKEN_RAW: ${{ secrets.EXPO_TOKEN }}
       CI: "1"
     steps:
       - name: Check out selected branch
@@ -30,12 +30,24 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Check Expo token is configured
+      - name: Validate and normalize Expo token
         run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo "::error::Add the EXPO_TOKEN Actions repository secret before running this workflow."
-            exit 1
-          fi
+          node - <<'NODE'
+          const fs = require('fs');
+          const raw = process.env.EXPO_TOKEN_RAW || '';
+          const token = raw.trim().replace(/[\r\n]/g, '');
+          if (!token) {
+            console.error('::error::Add the EXPO_TOKEN repository secret in GitHub Actions settings.');
+            process.exit(1);
+          }
+          if (/[\s\x00-\x1f\x7f]/.test(token) || /[^\x21-\x7e]/.test(token)) {
+            console.error('::error::EXPO_TOKEN contains whitespace or invalid characters. Recreate and paste only the full raw token.');
+            process.exit(1);
+          }
+          console.log('::add-mask::' + token);
+          fs.appendFileSync(process.env.GITHUB_ENV, 'EXPO_TOKEN=' + token + '\n');
+          console.log('Expo token format checked without displaying its value.');
+          NODE
 
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
