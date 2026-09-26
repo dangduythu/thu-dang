@@ -37,6 +37,12 @@
           "recordAudioAndroid": true
         }
       ]
-    ]
+    ],
+    "owner": "dangduythus-team",
+    "extra": {
+      "eas": {
+        "projectId": "956b20e5-fa85-44da-889a-2dda2cdf10ec"
+      }
+    }
   }
 }
