@@ -25,7 +25,7 @@ function latestMisses(history) {
   return outcomes;
 }
 
-export default function LearningHub({ vocabulary, currentDay, reviewData, speakingHistory, onHome, onDay, onLearn, onSpeaking, onListening, onTest, onSrsReview }) {
+export default function LearningHub({ vocabulary, currentDay, reviewData, speakingHistory, onHome, onDay, onLearn, onSpeaking, onListening, onTest, onSrsReview, onPlus }) {
   const [tab, setTab] = useState('overview');
   const [search, setSearch] = useState('');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
@@ -87,14 +87,14 @@ export default function LearningHub({ vocabulary, currentDay, reviewData, speaki
   const tabs = [['overview','Tổng quan'],['dictionary','Tra từ'],['smart','Ôn từ yếu'],['test','Kiểm tra']];
 
   return <SafeAreaView style={s.root}>
-    <View style={s.header}><Pressable onPress={onHome} style={{minHeight:48,justifyContent:'center',paddingHorizontal:8}} hitSlop={8}><Text style={s.back}>← Home</Text></Pressable><Text style={s.headerTitle}>ENGLISH LEARNING 10.0</Text></View>
+    <View style={s.header}><Pressable onPress={onHome} style={{minHeight:48,justifyContent:'center',paddingHorizontal:8}} hitSlop={8}><Text style={s.back}>← Home</Text></Pressable><Text style={s.headerTitle}>ENGLISH LEARNING 15.0</Text></View>
     <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
       <Text style={s.title}>My Learning</Text><Text style={s.muted}>Day {currentDay}/30 · English for Manufacturing & Engineering</Text>
       <View style={s.tabRow}>{tabs.map(([id,label]) => <Pressable key={id} onPress={() => setTab(id)} style={[s.tab,tab===id&&s.activeTab]}><Text style={[s.tabLabel,tab===id&&s.activeTabText]}>{label}</Text></Pressable>)}</View>
       {!ready && <ActivityIndicator />}{Boolean(error) && <Text style={s.error}>{error}</Text>}
       {tab==='overview' && <>
         <View style={s.hero}><Text style={s.heroSub}>YOUR LEARNING JOURNEY</Text><Text style={s.heroTitle}>Day {currentDay} / 30</Text><Text style={s.heroSub}>{learned}/{vocabulary.length} từ đã học · {due} từ đến hạn ôn</Text><View style={s.track}><View style={[s.fill,{width:`${vocabulary.length ? learned/vocabulary.length*100 : 0}%`}]} /></View><Pressable onPress={onLearn} style={s.heroAction}><Text style={s.heroActionText}>▶ Tiếp tục bài học</Text></Pressable></View>
-        <View style={s.grid}><Tile icon="📚" label="Vocabulary" caption="Bài hiện tại" onPress={onLearn}/><Tile icon="🎧" label="Listening" caption="Nghe và chọn nghĩa" onPress={onListening}/><Tile icon="🎤" label="Speaking" caption="Ghi âm và nghe lại" onPress={onSpeaking}/><Tile icon="🧠" label="Smart Review" caption={`${weak.length} từ cần chú ý`} onPress={()=>setTab('smart')}/></View>
+        <View style={s.grid}><Tile icon="📚" label="Vocabulary" caption="Bài hiện tại" onPress={onLearn}/><Tile icon="🎧" label="Listening" caption="Nghe và chọn nghĩa" onPress={onListening}/><Tile icon="🎤" label="Speaking" caption="Ghi âm và nghe lại" onPress={onSpeaking}/><Tile icon="🧠" label="Smart Review" caption={`${weak.length} từ cần chú ý`} onPress={()=>setTab('smart')}/><Tile icon="✨" label="Learning Studio" caption="Ảnh · nghe · nói · ôn tập V15" onPress={onPlus}/></View>
         <View style={s.card}><Text style={s.section}>Today's Progress</Text><Text>🎧 {todayQuizzes.length} bài nghe · 🎤 {todaySpeaking} từ-ngày đã ghi âm</Text><Text style={s.muted}>Mục tiêu gợi ý: 1 bài nghe và luyện 5 từ mỗi ngày.</Text></View>
         <Pressable style={s.secondary} onPress={onDay}><Text style={s.secondaryText}>Xem chương trình 30 ngày →</Text></Pressable>
       </>}
